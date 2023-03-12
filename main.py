@@ -18,23 +18,27 @@ def start_game(number_of_players):
     pile = deck.cards
     graveyard = []
     for player in players:
-        exchange_cards(player)
+        trade_cards(player)
     # TODO now the actual game starts.
 
 
-def exchange_cards(player):
+def trade_cards(player):
     exchange_card = input(player.name + ", do you want to exchange a card? ")
     while exchange_card == "yes":
         print("Which card do you want to exchange? Available cards on hand: ", player.hand_cards)
-        card_on_hand = card_from_input(player.hand_cards)
+        card_on_hand = None
+        while not card_on_hand:
+            card_on_hand = card_from_input(player.hand_cards)
         print("Which card do you want to trade it for? Available open cards: ", player.open_cards)
-        card_to_exchange = card_from_input(player.open_cards)
-        exchange(player, card_on_hand, card_to_exchange)
+        card_to_exchange = None
+        while not card_to_exchange:
+            card_to_exchange = card_from_input(player.open_cards)
+        exchange_cards(player, card_on_hand, card_to_exchange)
         exchange_card = input("Do you want to exchange another card? ")
     print("Done exchanging cards for player " + player.name)
 
 
-def exchange(player, card_on_hand, card_to_exchange):
+def exchange_cards(player, card_on_hand, card_to_exchange):
     player.hand_cards.pop(player.hand_cards.index(card_on_hand))
     player.hand_cards.append(card_to_exchange)
     player.open_cards.pop(player.open_cards.index(card_to_exchange))
@@ -46,10 +50,19 @@ def exchange(player, card_on_hand, card_to_exchange):
 def card_from_input(cards):
     rank = input("Rank: ")
     suit = input("Suit: ")
-    selected_card = next(
-        (card for card in cards if card.rank == Rank[rank] and card.suit == Suit[suit]), None)
-    print("Selected card: ", selected_card)
-    return selected_card
+    selected_card = None
+    try:
+        selected_card = next(
+            (card for card in cards if card.rank == Rank[rank] and card.suit == Suit[suit]), None)
+    except:
+        print(rank + " of " + suit + " cannot be resolved to a valid card")
+        return
+    if not selected_card:
+        print("Couldn't find card " + rank + " of " + suit + " in ", cards)
+        return
+    elif selected_card:
+        print("Selected card: ", selected_card)
+        return selected_card
 
 
 def initialize_deck():

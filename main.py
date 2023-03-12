@@ -15,33 +15,41 @@ def start_game(number_of_players):
     deck = initialize_deck()
     players = register_players(number_of_players)
     dispense_cards(players, deck)
+    pile = deck.cards
+    graveyard = []
     for player in players:
         exchange_cards(player)
+    # TODO now the actual game starts.
 
 
 def exchange_cards(player):
-    exchange = input("Do you want to exchange a card? ")
-    while exchange == "yes":
+    exchange_card = input(player.name + ", do you want to exchange a card? ")
+    while exchange_card == "yes":
         print("Which card do you want to exchange? Available cards on hand: ", player.hand_cards)
-        rank = input("Rank: ")
-        suit = input("Suit: ")
-        card_on_hand = next(
-            (card for card in player.hand_cards if card.rank == Rank[rank] and card.suit == Suit[suit]), None)
-        print("Selected card on hand: ", card_on_hand)
+        card_on_hand = card_from_input(player.hand_cards)
         print("Which card do you want to trade it for? Available open cards: ", player.open_cards)
-        rank = input("Rank: ")
-        suit = input("Suit: ")
-        card_to_exchange = next(
-            (card for card in player.open_cards if card.rank == Rank[rank] and card.suit == Suit[suit]), None)
-        # TODO pop doesn't work with objects, only indices. find a way to remove card_on_hand from hand_cards
-        player.hand_cards.pop(card_on_hand)
-        player.hand_cards.append(card_to_exchange)
-        player.open_cards.pop(card_to_exchange)
-        player.open_cards.append(card_on_hand)
-        print("open cards after exchange: ", player.open_cards)
-        print("hand cards after exchange: ", player.hand_cards)
-        exchange = input("Do you want to exchange another card? ")
+        card_to_exchange = card_from_input(player.open_cards)
+        exchange(player, card_on_hand, card_to_exchange)
+        exchange_card = input("Do you want to exchange another card? ")
     print("Done exchanging cards for player " + player.name)
+
+
+def exchange(player, card_on_hand, card_to_exchange):
+    player.hand_cards.pop(player.hand_cards.index(card_on_hand))
+    player.hand_cards.append(card_to_exchange)
+    player.open_cards.pop(player.open_cards.index(card_to_exchange))
+    player.open_cards.append(card_on_hand)
+    print("Hand cards after exchange: ", player.hand_cards)
+    print("Open cards after exchange: ", player.open_cards)
+
+
+def card_from_input(cards):
+    rank = input("Rank: ")
+    suit = input("Suit: ")
+    selected_card = next(
+        (card for card in cards if card.rank == Rank[rank] and card.suit == Suit[suit]), None)
+    print("Selected card: ", selected_card)
+    return selected_card
 
 
 def initialize_deck():
@@ -54,7 +62,7 @@ def initialize_deck():
 def register_players(number_of_players):
     players = []
     for player_number in range(number_of_players):
-        name = input("Register player " + str(player_number) + ":")
+        name = input("Register player " + str(player_number) + ": ")
         player = Player(name, [], [], [])
         players.append(player)
     print("Registered " + str(number_of_players) + " players: ", players)
